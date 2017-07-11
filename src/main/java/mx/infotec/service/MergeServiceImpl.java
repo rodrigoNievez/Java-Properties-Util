@@ -18,11 +18,12 @@ import mx.infotec.model.ResumeModel;
 @Service
 public class MergeServiceImpl implements MergeService {
 	
-	private Logger LOGG = LoggerFactory.getLogger(MergeServiceImpl.class);
+	private Logger LOG = LoggerFactory.getLogger(MergeServiceImpl.class);
 	
 	@Autowired
 	private FileService fileService;
-
+	
+	
 	@Override
 	public ResumeModel mergePropertes(String from, String to) throws PropertiesException {
 		Properties fromProperties = null;
@@ -57,7 +58,7 @@ public class MergeServiceImpl implements MergeService {
 			
 		} catch (Exception e) {
 			fileService.writePropertiesFile(back, to);
-			LOGG.error("Error al hacer el merge de los archivos, causa: {} ", e);
+			LOG.error("Error al hacer el merge de los archivos, causa: {} ", e);
 			throw new PropertiesException(e);
 		}
 		
@@ -79,7 +80,7 @@ public class MergeServiceImpl implements MergeService {
 			fileScanner.close();
 			return resume;
 		} catch(Exception e) {
-			LOGG.error("Error al hacer el merge de los archivos, causa: {} ", e);
+			LOG.error("Error al hacer el merge de los archivos, causa: {} ", e);
 			throw new PropertiesException(e);
 		}
 		
@@ -90,29 +91,69 @@ public class MergeServiceImpl implements MergeService {
 		ResumeModel resume = new ResumeModel();
 		resume.setAddedProperties(new Properties());
 		resume.setUpdatedProperties(new Properties());
+		Properties back = null;
 		try {
 			Properties toProperties = fileService.getPropertiesFromFile(to);
+			back = toProperties;
 			for (Entry<Object, Object> item : properties.entrySet()) {
 				String key = String.valueOf(item.getKey());
 				String value = String.valueOf(item.getValue());
 				if (!skip.contains(key)) {
+					continue;
+				} else {
 					
+					if (toProperties.containsKey(key)) {
+						toProperties.setProperty(key, value);
+						resume.getUpdatedProperties().setProperty(key, value);
+					} else {
+						toProperties.put(key, value);
+						resume.getAddedProperties().setProperty(key, value);
+					}
 				}
 			}
+			fileService.writePropertiesFile(toProperties, to);
 		} catch (Exception e) {
-			// TODO: handle exception
+			LOG.error("Error al hacer el merge con los archivos, causa: ", e);
+			if (back != null) {
+				restoreBackup(back, to);
+			}
+			throw new PropertiesException(e);
 		}
-		return null;
+		back = null;
+		return resume;
 	}
 	
 	@Override
 	public ResumeModel mergePropertiesWhitSkipFromFile(String from, String to, String skip) throws PropertiesException {
-		return null;
+		try {
+			Properties fromProperties = fileService.getPropertiesFromFile(from);
+			Properties skipProperties = fileService.getPropertiesFromFile(skip);
+			return mergePropertiesWhitSkip(fromProperties, to, skipProperties);
+		} catch (Exception e) {
+			LOG.error("Error al hacer un merge desde los archivos, causa: ",e);
+			throw new PropertiesException(e);
+		}
 	}
 	
 	@Override
 	public List<String> mergeMultipeFilesWhitSkipFromFile(String from, String container, String skip) throws PropertiesException {
-		return null;
+		File fileContainer = null;
+		Scanner fileScanner = null;
+		List<String> resume = new ArrayList<>();
+		try {
+			File file = new File(container);
+			fileScanner = new Scanner(file);
+			while (fileScanner.hasNext()) {
+				String currentFile = fileScanner.nextLine();
+				fileContainer = new File(currentFile);
+				mergePropertiesWhitSkipFromFile(from, currentFile, skip);
+				resume.add(fileContainer.getName());
+			}
+			fileScanner.close();
+		} catch (Exception e) {
+			LOG.error("Error al insertar las nuevas propiedades en multiples archivos, causa: {} ", e);
+		}
+		return resume;
 	}
 
 	@Override
@@ -125,8 +166,10 @@ public class MergeServiceImpl implements MergeService {
 			toProperties.putAll(properties);
 			return true;
 		} catch (Exception e) {
-			LOGG.error("Error al insertar las nuevas propiedades, causa: {} ", e);
-			restoreBackup(back, to);
+			LOG.error("Error al insertar las nuevas propiedades, causa: {} ", e);
+			if (back != null) {
+				restoreBackup(back, to);
+			}
 			return false;
 		}
 		
@@ -140,7 +183,7 @@ public class MergeServiceImpl implements MergeService {
 			return insertNewProperties(fromProperties, to);
 			
 		} catch (Exception e) {
-			LOGG.error("Error al insertar las nuevas propiedades desde archivo, causa: {} ", e);
+			LOG.error("Error al insertar las nuevas propiedades desde archivo, causa: {} ", e);
 			throw new PropertiesException(e);
 		}
 	}
@@ -161,7 +204,7 @@ public class MergeServiceImpl implements MergeService {
 			}
 			fileScanner.close();
 		} catch (Exception e) {
-			LOGG.error("Error al insertar las nuevas propiedades en multiples archivos, causa: {} ", e);
+			LOG.error("Error al insertar las nuevas propiedades en multiples archivos, causa: {} ", e);
 		}
 		return resume;
 	}
@@ -191,7 +234,7 @@ public class MergeServiceImpl implements MergeService {
 			fileService.writePropertiesFile(toProperties, to);
 			return resume;
 		} catch (Exception e) {
-			LOGG.error("Error al actualizar propiedades en archivo, causa: {} ", e);
+			LOG.error("Error al actualizar propiedades en archivo, causa: {} ", e);
 			if (backup != null) {
 				restoreBackup(backup, to);
 			}
@@ -207,7 +250,7 @@ public class MergeServiceImpl implements MergeService {
 			Properties fromProperties = fileService.getPropertiesFromFile(from);
 			return updateProperties(fromProperties, to);
 		} catch (Exception e) {
-			LOGG.error("Error al actualizar propiedades en archivo, causa: {} ", e);
+			LOG.error("Error al actualizar propiedades en archivo, causa: {} ", e);
 			throw new PropertiesException(e);
 		}
 	}
@@ -229,7 +272,7 @@ public class MergeServiceImpl implements MergeService {
 			}
 			fileScanner.close();
 		} catch (Exception e) {
-			LOGG.error("Error al insertar las nuevas propiedades en multiples archivos, causa: {} ", e);
+			LOG.error("Error al insertar las nuevas propiedades en multiples archivos, causa: {} ", e);
 		}
 		return resume;
 	}
@@ -239,7 +282,7 @@ public class MergeServiceImpl implements MergeService {
 			fileService.writePropertiesFile(properties, to);
 			return true;
 		} catch (PropertiesException e) {
-			LOGG.error("Error al restaurar el archivo de propiedades, causa: {}",e);
+			LOG.error("Error al restaurar el archivo de propiedades, causa: {}",e);
 			return false;
 		}
 	}
