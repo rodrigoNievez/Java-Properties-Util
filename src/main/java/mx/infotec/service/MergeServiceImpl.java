@@ -98,7 +98,7 @@ public class MergeServiceImpl implements MergeService {
 			for (Entry<Object, Object> item : properties.entrySet()) {
 				String key = String.valueOf(item.getKey());
 				String value = String.valueOf(item.getValue());
-				if (!skip.contains(key)) {
+				if (skip.containsKey(key)) {
 					continue;
 				} else {
 					

@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import mx.infotec.exception.PropertiesException;
@@ -20,6 +21,8 @@ import mx.infotec.exception.PropertiesException;
 public class FileServiceImpl implements FileService {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileServiceImpl.class);
+	@Value("${updated.comment}")
+	private String updatedComment;
 	
 
 	@Override
@@ -51,7 +54,7 @@ public class FileServiceImpl implements FileService {
 		try {
 			FileOutputStream fileOutput = new FileOutputStream(file);
 			Properties sortedProperties = sortProperties(properties);
-			sortedProperties.store(fileOutput, "");
+			sortedProperties.store(fileOutput, updatedComment);
 			fileOutput.close();
 			return true;
 		} catch (FileNotFoundException e) {
