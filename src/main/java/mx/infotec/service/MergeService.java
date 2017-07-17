@@ -16,7 +16,7 @@ public interface MergeService {
 	
 	ResumeModel mergePropertiesWhitSkipFromFile(String from, String to, String skip) throws PropertiesException;
 	
-	List<String> mergeMultipeFilesWhitSkipFromFile(String from, String container, String skip) throws PropertiesException;
+	List<ResumeModel> mergeMultipeFilesWhitSkipFromFile(String from, String container, String skip) throws PropertiesException;
 	
 	boolean insertNewProperties(Properties properties,String to) throws PropertiesException;
 	

@@ -15,7 +15,7 @@ public class ResumeModel implements Serializable {
 	private Properties addedProperties;
 	private Properties updatedProperties;
 	private Properties missingProperties;
-	private String files;
+	private String fileName;
 	private boolean isError;
 	/**
 	 * @return the mergedProperties
@@ -68,14 +68,14 @@ public class ResumeModel implements Serializable {
 	/**
 	 * @return the files
 	 */
-	public String getFiles() {
-		return files;
+	public String getFileName() {
+		return fileName;
 	}
 	/**
 	 * @param files the files to set
 	 */
-	public void setFiles(String files) {
-		this.files = files;
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 	/**
 	 * @return the isError

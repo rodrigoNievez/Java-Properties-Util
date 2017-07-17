@@ -136,18 +136,20 @@ public class MergeServiceImpl implements MergeService {
 	}
 	
 	@Override
-	public List<String> mergeMultipeFilesWhitSkipFromFile(String from, String container, String skip) throws PropertiesException {
+	public List<ResumeModel> mergeMultipeFilesWhitSkipFromFile(String from, String container, String skip) throws PropertiesException {
 		File fileContainer = null;
 		Scanner fileScanner = null;
-		List<String> resume = new ArrayList<>();
+		List<ResumeModel> resume = new ArrayList<>();
 		try {
 			File file = new File(container);
 			fileScanner = new Scanner(file);
 			while (fileScanner.hasNext()) {
+				ResumeModel currentResume = new ResumeModel();
 				String currentFile = fileScanner.nextLine();
 				fileContainer = new File(currentFile);
-				mergePropertiesWhitSkipFromFile(from, currentFile, skip);
-				resume.add(fileContainer.getName());
+				currentResume = mergePropertiesWhitSkipFromFile(from, currentFile, skip);
+				currentResume.setFileName(fileContainer.getName());
+				resume.add(currentResume);
 			}
 			fileScanner.close();
 		} catch (Exception e) {

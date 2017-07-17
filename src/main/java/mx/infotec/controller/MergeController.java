@@ -38,7 +38,7 @@ public class MergeController {
 	@RequestMapping(value="/multiple/skip", method=RequestMethod.POST, 
 			consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<?> mergeMultiple(@RequestBody FileModel fileModel) {
-		List<String> resume = null;
+		List<ResumeModel> resume = null;
 		try {
 			resume = mergeService.mergeMultipeFilesWhitSkipFromFile(fileModel.getFromPropertiesFile(), fileModel.getToPropertiesFile(), fileModel.getSkipPropertiesFile());
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(resume);
